@@ -13,18 +13,61 @@ from kivy.graphics.texture import Texture
 from kivy.clock import Clock
 from kivy.core.window import Window
 
+class CustomButton(Button):
+    def __init__(self, **kwargs):
+        super(CustomButton, self).__init__(**kwargs)
+        self.background_normal = ''
+        self.background_color = (0.2, 0.7, 0.3, 1) 
+        self.color = (1, 1, 1, 1)  
+        self.border = (0, 0, 0, 0)
+        
 class MainScreen(Screen):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
-        Window.clearcolor = (0, 0.6, 0.3, 1)
-        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
-        layout.add_widget(Image(source='images/xatu.png', size_hint=(1, 0.5), allow_stretch=True, keep_ratio=True))
-        layout.add_widget(Label(text="Xatu'nun Kehaneti", font_size=28, size_hint=(1, 0.2), color=(1, 1, 1, 1)))
-        btn = Button(text="Falını Gör", size_hint=(1, 0.2), font_size=22,
-                     background_color=(1, 1, 1, 1), color=(0, 0.5, 0.2, 1))
-        btn.bind(on_press=self.go_to_camera)
-        layout.add_widget(btn)
-        self.add_widget(layout)
+        Window.clearcolor = (0.95, 0.95, 0.95, 1)  
+        
+        main_layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
+        
+        top_box = BoxLayout(orientation='vertical', size_hint=(1, 0.7))
+        
+        img_container = BoxLayout(orientation='vertical', 
+                                size_hint=(1, 0.8),
+                                padding=(50, 20))
+        
+        logo = Image(source='images/xatu.png',
+                    size_hint=(1, 1),
+                    allow_stretch=True,
+                    keep_ratio=True)
+        
+        title = Label(text="Xatu'nun Kehaneti",
+                     font_size=32,
+                     size_hint=(1, 0.2),
+                     color=(0.2, 0.2, 0.2, 1), 
+                     bold=True)
+        
+        img_container.add_widget(logo)
+        img_container.add_widget(title)
+        
+        top_box.add_widget(img_container)
+        
+        btn_container = BoxLayout(orientation='vertical',
+                                size_hint=(1, 0.3),
+                                padding=(80, 20))
+        
+        start_btn = CustomButton(
+            text="Falına Bak",
+            size_hint=(1, None),
+            height=60,
+            font_size=24
+        )
+        start_btn.bind(on_press=self.go_to_camera)
+        
+        btn_container.add_widget(start_btn)
+        
+        main_layout.add_widget(top_box)
+        main_layout.add_widget(btn_container)
+        
+        self.add_widget(main_layout)
 
     def go_to_camera(self, instance):
         self.manager.current = 'camera'
@@ -32,15 +75,55 @@ class MainScreen(Screen):
 class CameraScreen(Screen):
     def __init__(self, **kwargs):
         super(CameraScreen, self).__init__(**kwargs)
+        Window.clearcolor = (0.1, 0.1, 0.1, 1)  
+        
         self.capture = None
-        self.img_widget = Image()
         self.frame = None
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(self.img_widget)
-        btn_capture = Button(text='El Görüntüsünü Al', size_hint=(1, 0.2))
-        btn_capture.bind(on_press=self.capture_image)
-        layout.add_widget(btn_capture)
-        self.add_widget(layout)
+        
+        main_layout = BoxLayout(orientation='vertical', padding=20, spacing=10)
+        
+        camera_container = BoxLayout(
+            orientation='vertical',
+            size_hint=(1, 0.8),
+            padding=10
+        )
+        
+        self.img_widget = Image(size_hint=(1, 1))
+        camera_container.add_widget(self.img_widget)
+        
+        controls_container = BoxLayout(
+            orientation='horizontal',
+            size_hint=(1, 0.2),
+            padding=(40, 10),
+            spacing=20
+        )
+        
+        back_btn = CustomButton(
+            text='Geri Dön',
+            size_hint=(0.3, None),
+            height=50,
+            background_color=(0.7, 0.2, 0.2, 1)  
+        )
+        back_btn.bind(on_press=self.go_back)
+        
+        # Çekim butonu
+        capture_btn = CustomButton(
+            text='El Görüntüsünü Al',
+            size_hint=(0.7, None),
+            height=50
+        )
+        capture_btn.bind(on_press=self.capture_image)
+        
+        controls_container.add_widget(back_btn)
+        controls_container.add_widget(capture_btn)
+        
+        main_layout.add_widget(camera_container)
+        main_layout.add_widget(controls_container)
+        
+        self.add_widget(main_layout)
+    
+    def go_back(self, instance):
+        self.manager.current = 'main'
 
     def on_enter(self):
         self.capture = cv2.VideoCapture(0)
@@ -70,12 +153,65 @@ class CameraScreen(Screen):
 class AnalysisScreen(Screen):
     def __init__(self, **kwargs):
         super(AnalysisScreen, self).__init__(**kwargs)
-        Window.clearcolor = (1, 1, 1, 1)
-        self.layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
-        self.layout.add_widget(Label(text="Çizgi Analizi", font_size=32, size_hint=(1, 0.2), color=(0, 0, 0, 1)))
-        self.grid = GridLayout(cols=2, spacing=10, size_hint=(1, 0.8), row_force_default=True, row_default_height=60)
-        self.layout.add_widget(self.grid)
-        self.add_widget(self.layout)
+        Window.clearcolor = (0.95, 0.95, 0.95, 1)  # Açık gri arkaplan
+        
+        # Ana düzen
+        main_layout = BoxLayout(orientation='vertical', padding=30, spacing=20)
+        
+        # Başlık container'ı
+        title_container = BoxLayout(
+            orientation='vertical',
+            size_hint=(1, 0.15),
+            padding=(0, 10)
+        )
+        
+        title = Label(
+            text="El Çizgisi Analizi",
+            font_size=36,
+            color=(0.2, 0.2, 0.2, 1),
+            bold=True
+        )
+        title_container.add_widget(title)
+        
+        scroll = BoxLayout(orientation='vertical', size_hint=(1, 0.7))
+        
+        self.grid = GridLayout(
+            cols=2,
+            spacing=15,
+            size_hint=(1, None),
+            row_force_default=True,
+            row_default_height=80,
+            padding=(20, 10)
+        )
+        self.grid.bind(minimum_height=self.grid.setter('height'))
+        
+        scroll.add_widget(self.grid)
+        
+        button_container = BoxLayout(
+            orientation='horizontal',
+            size_hint=(1, 0.15),
+            padding=(40, 10),
+            spacing=20
+        )
+        
+        back_btn = CustomButton(
+            text='Ana Menüye Dön',
+            size_hint=(1, None),
+            height=50,
+            background_color=(0.2, 0.7, 0.3, 1)
+        )
+        back_btn.bind(on_press=self.go_main)
+        
+        button_container.add_widget(back_btn)
+        
+        main_layout.add_widget(title_container)
+        main_layout.add_widget(scroll)
+        main_layout.add_widget(button_container)
+        
+        self.add_widget(main_layout)
+    
+    def go_main(self, instance):
+        self.manager.current = 'main'
 
     def interpret_line(self, name, length):
         yorumlar = {
