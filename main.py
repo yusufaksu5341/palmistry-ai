@@ -146,17 +146,26 @@ class AnalysisScreen(Screen):
 
         contours, _ = cv2.findContours(adaptive_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        for cnt in contours:
+        palm_height = palm_crop.shape[0]
+        region_height = palm_height / 4
+
+        sorted_contours = sorted(contours, key=lambda c: cv2.arcLength(c, True), reverse=True)[:8]  # En uzun 8 çizgiyi al
+        
+        for cnt in sorted_contours:
             x, y, w, h = cv2.boundingRect(cnt)
             length = cv2.arcLength(cnt, True)
-            if h > 30 and w > 100:
-                if y < 100:
+            
+            if h > 20 and w > 50:  
+               
+                center_y = y + h/2
+                
+                if center_y < region_height and çizgi_sonuçları["Kalp Çizgisi"] is None:
                     çizgi_sonuçları["Kalp Çizgisi"] = self.interpret_line("Kalp Çizgisi", length)
-                elif y < 200:
+                elif region_height <= center_y < 2*region_height and çizgi_sonuçları["Akıl Çizgisi"] is None:
                     çizgi_sonuçları["Akıl Çizgisi"] = self.interpret_line("Akıl Çizgisi", length)
-                elif y < 300:
+                elif 2*region_height <= center_y < 3*region_height and çizgi_sonuçları["Hayat Çizgisi"] is None:
                     çizgi_sonuçları["Hayat Çizgisi"] = self.interpret_line("Hayat Çizgisi", length)
-                else:
+                elif center_y >= 3*region_height and çizgi_sonuçları["Kader Çizgisi"] is None:
                     çizgi_sonuçları["Kader Çizgisi"] = self.interpret_line("Kader Çizgisi", length)
 
         for çizgi in çizgi_sonuçları:
